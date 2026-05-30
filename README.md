@@ -49,13 +49,13 @@ with
 evince all_diagrams.pdf &
 ```
 
-### 1. Madgraph Modification
+### 2. Madgraph Modification
 Example with `MG5zat` (do the same with `MG5view`).
 
 * Edit: madgraph/input/mg5_configuration.txt
 * add: eps_viewer = [ABSOLUTE_PATH_TO_MG5zat]/MG5zat
 
-### 2. Make it Executable
+### 3. Make it Executable
 Run this command in your terminal:
 ```bash
 chmod +x MG5zat
