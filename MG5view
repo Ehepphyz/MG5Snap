@@ -1,0 +1,33 @@
+#!/bin/bash
+# Script: MG5view
+
+# 1. Find all eps files, sort them to keep only unique paths
+# Using 'sort -u' to remove duplicate lines that MadGraph is generating
+files=$(find /tmp -maxdepth 2 -user "$USER" -name "*.eps" 2>/dev/null | sort -u)
+
+if [ -z "$files" ]; then
+    echo "Error: No .eps files found."
+    exit 1
+fi
+
+# Use a predictable path for the temp folder in /tmp to avoid permission issues
+TEMP_DIR="/tmp/madgraph_view_$$"
+mkdir -p "$TEMP_DIR"
+
+# 2. Process unique files only
+counter=0
+for file in $files; do
+    counter=$((counter + 1))
+    echo "Processing $counter: $file"
+    # Convert to a simple numbered filename in the temp directory
+    ps2pdf -dEPSCrop "$file" "$TEMP_DIR/diag_$counter.pdf"
+done
+
+# 3. Merge
+pdfunite "$TEMP_DIR"/*.pdf all_diagrams.pdf
+
+# 4. Open
+xdg-open all_diagrams.pdf &
+
+# 5. Cleanup
+rm -rf "$TEMP_DIR"

@@ -1,0 +1,39 @@
+#!/bin/bash
+# Script: MG5zat
+
+# 1. Define the working directory in the current folder
+WORK_DIR="$PWD/tmp"
+mkdir -p "$WORK_DIR"
+
+# 2. Cleanup previous runs
+rm -f "$WORK_DIR"/*.pdf
+
+# 3. Find unique EPS files
+files=$(find /tmp -maxdepth 2 -user "$USER" -name "*.eps" 2>/dev/null | sort -u)
+
+if [ -z "$files" ]; then
+    echo "Error: No .eps files found."
+    exit 1
+fi
+
+# 4. Convert files with a check for size
+counter=0
+for file in $files; do
+    # Only process if file size > 100 bytes (prevents empty files)
+    if [ -s "$file" ] && [ $(stat -c%s "$file") -gt 100 ]; then
+        counter=$((counter + 1))
+        echo "Converting: $file"
+        ps2pdf -dEPSCrop "$file" "$WORK_DIR/diag_$counter.pdf"
+    else
+        echo "Skipping empty or locked file: $file"
+    fi
+done
+
+# 5. Check if we actually converted any files
+if [ "$(ls -A "$WORK_DIR")" ]; then
+    pdfunite "$WORK_DIR"/*.pdf all_diagrams.pdf
+    pkill zathura
+    zathura all_diagrams.pdf &
+else
+    echo "Error: No valid .eps file were found to convert."
+fi
